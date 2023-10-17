@@ -1,0 +1,141 @@
+#include <Servo.h>
+#include <SoftwareSerial.h>
+
+SoftwareSerial espSerial(5, 6);
+
+//change wait time prescaler here
+const long prescaler = 5000;  //for test, 5sec wait time
+
+//activate servo control
+Servo myservo;
+
+//declare input pin for timeSet
+byte timeSetPin = 12;
+
+//declare output pin for timeMark (widely configurable)
+byte _1minMark = 8;
+byte _2minMark = 9;
+byte _4minMark = 10;
+byte _8minMark = 11;
+int _dayNightSts = A0;
+byte _stsLed = 4;
+byte timeSetInput = 1;
+
+//to avoid button command executed multiple time
+byte buttonActivated = false;
+
+//to store day/night analog value
+int dn_val = 0;
+
+//to store day/night status
+bool isDark = true;
+
+//timestamp marking
+long now = 0;
+long prev = 0;
+long rollTimeMark = 0;
+
+//timeToRoll counter (wait time)
+long timeToRoll = 0;
+
+void setup() {
+  //declare timeMark pin as OUTPUT
+  pinMode(_1minMark, OUTPUT);
+  pinMode(_2minMark, OUTPUT);
+  pinMode(_4minMark, OUTPUT);
+
+  pinMode(_8minMark, OUTPUT);
+  pinMode(_stsLed, OUTPUT);
+
+  digitalWrite(_1minMark, HIGH);
+
+  timeToRoll = (long)timeSetInput * prescaler;
+
+  //operation indicator LED (OUTPUT)
+  pinMode(13, OUTPUT);
+
+  //prepare for timeSet pushbutton as INPUT
+  pinMode(timeSetPin, INPUT);
+
+  //attach pin3 for servo control
+  myservo.attach(3);
+  myservo.write(90);
+
+  rollTimeMark = millis();
+
+  Serial.begin(9600);
+  espSerial.begin(9600);
+  dn_val = analogRead(_dayNightSts);
+
+  if (dn_val < 650) isDark = false;
+
+  Serial.print("timeToRoll: ");
+  Serial.println(timeToRoll);
+  Serial.print("Prescaler: ");
+  Serial.println(prescaler);
+}
+
+void loop() {
+  dn_val = analogRead(_dayNightSts);
+  if (dn_val < 650) {
+    digitalWrite(_stsLed, HIGH);
+    isDark = true;
+  } else if (dn_val > 770) {
+    digitalWrite(_stsLed, LOW);
+    isDark = false;
+  }
+
+  if (timeSetInput > 15) timeSetInput = 1;
+
+  digitalWrite(_1minMark, LOW);
+  digitalWrite(_2minMark, LOW);
+  digitalWrite(_4minMark, LOW);
+  digitalWrite(_8minMark, LOW);
+
+  bool _bit0, _bit1, _bit2, _bit3;
+  //check LSB to MSB value out of timeSetinput variable
+  //we only need first 4 bits
+
+  //because we only have 4 LED :)
+  _bit0 = bitRead(timeSetInput, 0);
+  _bit1 = bitRead(timeSetInput, 1);
+  _bit2 = bitRead(timeSetInput, 2);
+  _bit3 = bitRead(timeSetInput, 3);
+
+  // if (_bit0) Serial.println(1);
+  // if (_bit1) Serial.println(2);
+  // if (_bit2) Serial.println(3);
+  // if (_bit3) Serial.println(4);
+
+  if (_bit0) digitalWrite(_1minMark, HIGH);
+  if (_bit1) digitalWrite(_2minMark, HIGH);
+  if (_bit2) digitalWrite(_4minMark, HIGH);
+  if (_bit3) digitalWrite(_8minMark, HIGH);
+
+  //roll the servo, during day time only
+  if (!isDark && now - rollTimeMark > timeToRoll) {
+    myservo.write(0);
+    delay(2000);
+    myservo.write(90);
+
+    //save current roll time for next roll
+    rollTimeMark = millis();
+
+    //for debug purpose
+    Serial.println("roll!");
+    Serial.println(rollTimeMark);
+    espSerial.println(rollTimeMark);
+  }
+
+  //update current time
+  now = millis();
+
+  //blinking onboard LED - for power on indicator only
+  if (now % 1000 <= 5 && !digitalRead(13)) {
+
+    digitalWrite(13, HIGH);
+  } else if (digitalRead(13) && now % 1000 >= 150) {
+    digitalWrite(13, LOW);
+  }
+}
+ 
