@@ -1,4 +1,4 @@
-**Automatic Pet Feeder Project**
+#### Automatic Pet Feeder Project
 
 Welcome to our Automatic Pet Feeder project, designed to ensure your pet is fed timely and reliably. This innovative system utilizes a Light Dependent Resistor (LDR sensor) to monitor daytime, dispensing food according to user-set intervals. When the timer runs out, the food hatch opens, dropping food for your pet.
 
