@@ -6,6 +6,7 @@ Welcome to our Automatic Pet Feeder project, designed to ensure your pet is fed 
 
 Our Automatic Pet Feeder simplifies pet care, providing a convenient solution for pet owners. The LDR sensor precisely monitors daylight, ensuring accurate feeding times. Users can easily set the feeding intervals based on their pet's needs, guaranteeing regular and healthy meals.
 
+
 ### Cost Estimation
 
 ![Cost](https://github.com/Avineesh28/Automatic-Pet-Feeder-System/assets/79737929/ed455ecc-3e35-4542-8697-231638526558)
