@@ -8,6 +8,7 @@ This project demonstrates hands-on experience in **microcontroller programming, 
 
 ---
 
+
 ## Objectives
 
 - Automate pet feeding based on time and daylight conditions  
